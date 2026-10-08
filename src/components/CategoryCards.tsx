@@ -34,10 +34,21 @@ export function CategoryCards() {
         );
 
         return (
-          // Use Card component to display values by category
-          <div>
-            {category.label} - ฿{categoryTotal.toFixed(2)}
-          </div>
+          <Card key={category.id} className="gap-2 py-4">
+            <CardHeader className="gap-1 px-4">
+              <div className="text-muted-foreground">
+                {iconMap[String(category.value)]}
+              </div>
+              <CardTitle className="text-sm font-medium">
+                {category.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4">
+              <div className="text-xl font-bold">
+                ฿{categoryTotal.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
         );
       })}
     </div>

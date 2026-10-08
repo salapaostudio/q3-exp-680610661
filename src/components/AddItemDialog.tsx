@@ -6,11 +6,19 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function AddItemDialog() {
   const addExpense = useItemStore((state) => state.addExpense);
@@ -20,18 +28,31 @@ export function AddItemDialog() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<Expense["category"]>("Food");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !amount) return;
-
-    // addExpense(title, parseFloat(amount), category);
+  const resetForm = () => {
     setTitle("");
     setAmount("");
+    setCategory("Food");
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) resetForm();
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const parsedAmount = Number(amount);
+    if (!title.trim() || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return;
+    }
+
+    addExpense(title, parsedAmount, category);
+    resetForm();
     setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={<Button className="bg-indigo-500 hover:bg-indigo-600" />}
       >
@@ -57,7 +78,8 @@ export function AddItemDialog() {
             <Input
               id="amount"
               type="number"
-              step="1"
+              min="0.01"
+              step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
@@ -66,27 +88,32 @@ export function AddItemDialog() {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="category">Category</Label>
-            <select
-              id="category"
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            <Select
               value={category}
-              onChange={(e) =>
-                setCategory(e.target.value as Expense["category"])
+              onValueChange={(value) =>
+                setCategory(value as Expense["category"])
               }
             >
-              {categoryOptions.map((option) => (
-                <option key={option.id} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="category" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryOptions.map((option) => (
+                  <SelectItem key={option.id} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600"
-          >
-            Save Expense
-          </Button>
+          <DialogFooter>
+            <Button
+              type="submit"
+              className="w-full bg-blue-500 hover:bg-blue-600"
+            >
+              Save Expense
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
